@@ -98,7 +98,11 @@
   }
 
   body {
-    @apply bg-background text-foreground dark;
+    @apply bg-background text-foreground dark overflow-x-hidden;
+  }
+  
+  html {
+    @apply overflow-x-hidden;
   }
 }
 

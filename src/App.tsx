@@ -20,9 +20,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background overflow-x-hidden">
           <Navbar />
-          <main>
+          <main className="min-w-0 w-full">
             <Routes>
               <Route path="/" element={<Homepage />} />
               <Route path="/tokens" element={<TokensPage />} />

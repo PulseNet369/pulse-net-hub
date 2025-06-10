@@ -76,114 +76,116 @@ const LiquidityPoolsPage = () => {
   }, 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Liquidity Pools</h1>
-        <p className="text-muted-foreground mb-6">
-          Track liquidity pools and their performance across the ecosystem
-        </p>
+    <div className="min-w-0 w-full overflow-x-hidden">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Liquidity Pools</h1>
+          <p className="text-muted-foreground mb-6">
+            Track liquidity pools and their performance across the ecosystem
+          </p>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total TVL</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalTVL.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">24h Volume</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${total24hVolume.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Pools</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mockPools.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Avg APR</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">22.6%</div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <Input
-            placeholder="Search pools by pair or address..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="flex-1"
-          />
-          <Button>Add Pool</Button>
-        </div>
-      </div>
-
-      {/* Pools Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pool Overview</CardTitle>
-          <CardDescription>
-            All liquidity pools in the ecosystem with key metrics
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pool</TableHead>
-                  <TableHead>TVL</TableHead>
-                  <TableHead>24h Volume</TableHead>
-                  <TableHead>7d Volume</TableHead>
-                  <TableHead>24h Fees</TableHead>
-                  <TableHead>APR</TableHead>
-                  <TableHead>LP Tokens</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPools.map((pool) => (
-                  <TableRow key={pool.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{pool.pair}</div>
-                        <div className="text-sm text-muted-foreground font-mono">
-                          {pool.address}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{pool.tvl}</TableCell>
-                    <TableCell>{pool.volume24h}</TableCell>
-                    <TableCell>{pool.volume7d}</TableCell>
-                    <TableCell>{pool.fees24h}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{pool.apr}</Badge>
-                    </TableCell>
-                    <TableCell>{pool.lpTokens}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total TVL</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl xl:text-2xl font-bold">${totalTVL.toLocaleString()}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">24h Volume</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl xl:text-2xl font-bold">${total24hVolume.toLocaleString()}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Active Pools</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl xl:text-2xl font-bold">{mockPools.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Avg APR</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl xl:text-2xl font-bold">22.6%</div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
-
-      {filteredPools.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No pools found matching your criteria.</p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Input
+              placeholder="Search pools by pair or address..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="flex-1"
+            />
+            <Button className="w-full sm:w-auto">Add Pool</Button>
+          </div>
         </div>
-      )}
+
+        {/* Pools Table */}
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Pool Overview</CardTitle>
+            <CardDescription>
+              All liquidity pools in the ecosystem with key metrics
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[120px]">Pool</TableHead>
+                    <TableHead className="min-w-[100px]">TVL</TableHead>
+                    <TableHead className="min-w-[100px]">24h Volume</TableHead>
+                    <TableHead className="min-w-[100px] hidden sm:table-cell">7d Volume</TableHead>
+                    <TableHead className="min-w-[100px] hidden md:table-cell">24h Fees</TableHead>
+                    <TableHead className="min-w-[80px]">APR</TableHead>
+                    <TableHead className="min-w-[100px] hidden lg:table-cell">LP Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPools.map((pool) => (
+                    <TableRow key={pool.id}>
+                      <TableCell className="min-w-0">
+                        <div>
+                          <div className="font-medium">{pool.pair}</div>
+                          <div className="text-sm text-muted-foreground font-mono break-all">
+                            {pool.address}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{pool.tvl}</TableCell>
+                      <TableCell>{pool.volume24h}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{pool.volume7d}</TableCell>
+                      <TableCell className="hidden md:table-cell">{pool.fees24h}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{pool.apr}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">{pool.lpTokens}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {filteredPools.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No pools found matching your criteria.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
