@@ -27,7 +27,7 @@ export function Navbar() {
           {/* Logo/Title */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-xl font-bold text-primary">
-              PulseChain Tax Ecosystem
+              PulseNet Ecosystem
             </Link>
           </div>
 
