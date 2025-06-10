@@ -6,6 +6,42 @@ import { TokenConfig, DEAD_ADDRESSES } from '../data/tokenList';
 
 const RPC_URL = 'https://rpc.pulsechain.com';
 
+// Simple holder count estimation by checking transfer events
+async function getHolderCountEstimate(provider: ethers.JsonRpcProvider, tokenAddress: string): Promise<number> {
+  try {
+    // Get latest block
+    const latestBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, latestBlock - 100000); // Check last 100k blocks
+    
+    // Get Transfer events to estimate holders
+    const transferFilter = {
+      address: tokenAddress,
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' // Transfer event signature
+      ],
+      fromBlock,
+      toBlock: latestBlock
+    };
+    
+    const logs = await provider.getLogs(transferFilter);
+    const uniqueAddresses = new Set<string>();
+    
+    logs.forEach(log => {
+      if (log.topics.length >= 3) {
+        const to = '0x' + log.topics[2].slice(26); // Extract 'to' address
+        if (to !== '0x0000000000000000000000000000000000000000') {
+          uniqueAddresses.add(to.toLowerCase());
+        }
+      }
+    });
+    
+    return uniqueAddresses.size;
+  } catch (error) {
+    console.error('Error estimating holder count:', error);
+    return 0;
+  }
+}
+
 export async function fetchTokenData(tokenConfig: TokenConfig): Promise<Partial<TokenData>> {
   try {
     console.log(`Fetching token data for ${tokenConfig.name} (${tokenConfig.address})`);
@@ -41,11 +77,13 @@ export async function fetchTokenData(tokenConfig: TokenConfig): Promise<Partial<
     const [
       burnedBalances,
       [name, symbol, decimals, totalSupply],
-      taxData
+      taxData,
+      holderCount
     ] = await Promise.all([
       Promise.all(burnedBalancePromises),
       Promise.all(basicDataPromises),
-      tokenConfig.hasDistributor ? Promise.all(taxDataPromises) : Promise.resolve([])
+      tokenConfig.hasDistributor ? Promise.all(taxDataPromises) : Promise.resolve([]),
+      getHolderCountEstimate(provider, tokenConfig.address)
     ]);
 
     // Calculate total burned supply
@@ -58,6 +96,7 @@ export async function fetchTokenData(tokenConfig: TokenConfig): Promise<Partial<
       decimals,
       totalSupply: totalSupply.toString(),
       burnedSupply,
+      holderCount,
       hasDistributor: tokenConfig.hasDistributor
     });
 
@@ -68,6 +107,7 @@ export async function fetchTokenData(tokenConfig: TokenConfig): Promise<Partial<
       decimals: Number(decimals),
       totalSupply: ethers.formatUnits(totalSupply, decimals),
       burnedSupply,
+      holders: holderCount,
       rewardToken: tokenConfig.rewardToken?.symbol,
       wrappedToken: tokenConfig.wrappedToken?.symbol
     };
