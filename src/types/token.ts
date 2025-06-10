@@ -5,17 +5,20 @@ export interface TokenData {
   symbol: string;
   address: string;
   totalSupply: string;
+  burnedSupply?: string;
   decimals: number;
-  distributorAddress: string;
-  liquidityTax: number;
-  reflectionTax: number;
-  devTax: number;
-  marketingTax: number;
-  totalTax: number;
-  sellMultiplier: number;
+  distributorAddress?: string;
+  liquidityTax?: number;
+  reflectionTax?: number;
+  devTax?: number;
+  marketingTax?: number;
+  totalTax?: number;
+  sellMultiplier?: number;
   rewardToken?: string;
+  wrappedToken?: string;
   price?: string;
   change24h?: string;
-  tvl?: string;
+  marketCap?: string;
   holders?: number;
+  hasDistributor?: boolean;
 }
