@@ -23,7 +23,7 @@ const TokensPage = () => {
           const tokenData = await fetchTokenData(tokenConfig);
           
           // Mock price data (in real app, this would come from price API)
-          const mockPrice = index === 0 ? 0.00012 : 0.0023;
+          const mockPrice = index === 0 ? 0.00012 : index === 1 ? 0.0045 : 0.0023;
           const totalSupplyNum = parseFloat(tokenData.totalSupply || "0");
           const marketCap = mockPrice * totalSupplyNum;
           
@@ -32,7 +32,7 @@ const TokensPage = () => {
             ...tokenData,
             hasDistributor: tokenConfig.hasDistributor,
             price: `$${mockPrice.toFixed(6)}`,
-            change24h: index === 0 ? "+5.2%" : "-1.3%",
+            change24h: index === 0 ? "+5.2%" : index === 1 ? "+2.8%" : "-1.3%",
             marketCap: `$${marketCap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
           } as TokenData;
         } catch (error) {
@@ -87,16 +87,16 @@ const TokensPage = () => {
             </h1>
             <p className="text-muted-foreground mb-6">Loading token data from PulseChain...</p>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="animate-pulse border-pink-500/20 card-gradient">
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <div className="h-6 bg-muted rounded w-1/3"></div>
                   <div className="h-4 bg-muted rounded w-1/2"></div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[...Array(8)].map((_, j) => (
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[...Array(6)].map((_, j) => (
                       <div key={j} className="space-y-2">
                         <div className="h-3 bg-muted rounded w-1/2"></div>
                         <div className="h-4 bg-muted rounded w-3/4"></div>
@@ -148,28 +148,28 @@ const TokensPage = () => {
           </div>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {filteredTokens.map((token) => (
             <Card key={token.id} className="border-pink-500/20 card-gradient hover:shadow-lg hover:shadow-pink-500/10 transition-all duration-300 overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <CardTitle className="flex items-center gap-2 flex-wrap mb-2">
-                      <span className="text-gradient-hex text-xl md:text-2xl">
+                      <span className="text-gradient-hex text-lg md:text-xl">
                         {token.name} ({token.symbol})
                       </span>
                       {token.hasDistributor && token.totalTax !== undefined && (
-                        <Badge variant="secondary" className="bg-pink-500/20 text-pink-300 border-pink-500/30 shrink-0">
+                        <Badge variant="secondary" className="bg-pink-500/20 text-pink-300 border-pink-500/30 shrink-0 text-xs">
                           Total Tax: {token.totalTax}%
                         </Badge>
                       )}
                       {!token.hasDistributor && (
-                        <Badge variant="outline" className="border-purple-400/50 text-purple-300 shrink-0">
+                        <Badge variant="outline" className="border-purple-400/50 text-purple-300 shrink-0 text-xs">
                           Standard Token
                         </Badge>
                       )}
                     </CardTitle>
-                    <CardDescription className="mb-3">
+                    <CardDescription className="mb-2">
                       <AddressDisplay 
                         address={token.address} 
                         showLabel={false}
@@ -178,7 +178,7 @@ const TokensPage = () => {
                     </CardDescription>
                   </div>
                   <div className="text-right lg:min-w-[120px]">
-                    <div className="text-xl md:text-2xl font-bold text-gradient-pulse">
+                    <div className="text-lg md:text-xl font-bold text-gradient-pulse">
                       {token.price}
                     </div>
                     <div className={`text-sm font-semibold ${token.change24h?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
@@ -188,60 +188,66 @@ const TokensPage = () => {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-muted/50 p-3 rounded-lg">
-                    <div className="text-sm text-muted-foreground">Total Supply</div>
-                    <div className="font-semibold text-foreground">{parseFloat(token.totalSupply).toLocaleString()}</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <div className="text-xs text-muted-foreground">Total Supply</div>
+                    <div className="font-semibold text-foreground text-sm">{parseFloat(token.totalSupply).toLocaleString()}</div>
                   </div>
                   {token.burnedSupply && (
-                    <div className="bg-muted/50 p-3 rounded-lg">
-                      <div className="text-sm text-muted-foreground">Burned Supply</div>
-                      <div className="font-semibold text-red-400">{parseFloat(token.burnedSupply).toLocaleString()}</div>
+                    <div className="bg-muted/50 p-2 rounded-lg">
+                      <div className="text-xs text-muted-foreground">Burned Supply</div>
+                      <div className="font-semibold text-red-400 text-sm">{parseFloat(token.burnedSupply).toLocaleString()}</div>
                     </div>
                   )}
-                  <div className="bg-muted/50 p-3 rounded-lg">
-                    <div className="text-sm text-muted-foreground">Market Cap</div>
-                    <div className="font-semibold text-foreground">{token.marketCap}</div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <div className="text-xs text-muted-foreground">Market Cap</div>
+                    <div className="font-semibold text-foreground text-sm">{token.marketCap}</div>
                   </div>
-                  <div className="bg-muted/50 p-3 rounded-lg">
-                    <div className="text-sm text-muted-foreground">Holders</div>
-                    <div className="font-semibold text-foreground">{token.holders}</div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <div className="text-xs text-muted-foreground">Holders</div>
+                    <div className="font-semibold text-foreground text-sm">{token.holders}</div>
                   </div>
+                  {token.rewardToken && (
+                    <div className="bg-muted/50 p-2 rounded-lg">
+                      <div className="text-xs text-muted-foreground">Reward Token</div>
+                      <div className="font-semibold text-purple-400 text-sm">{token.rewardToken}</div>
+                    </div>
+                  )}
+                  {token.wrappedToken && (
+                    <div className="bg-muted/50 p-2 rounded-lg">
+                      <div className="text-xs text-muted-foreground">Wrapped Token</div>
+                      <div className="font-semibold text-indigo-400 text-sm">{token.wrappedToken}</div>
+                    </div>
+                  )}
                 </div>
                 
                 {token.hasDistributor && (
-                  <div className="border-t border-border pt-4">
-                    <h4 className="text-lg font-semibold text-gradient-pulse mb-4">Tax Information</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Liquidity Tax</div>
-                        <div className="font-semibold text-blue-400">{token.liquidityTax}%</div>
+                  <div className="border-t border-border pt-3">
+                    <h4 className="text-base font-semibold text-gradient-pulse mb-3">Tax Information</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Liquidity Tax</div>
+                        <div className="font-semibold text-blue-400 text-sm">{token.liquidityTax}%</div>
                       </div>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Reflection Tax</div>
-                        <div className="font-semibold text-purple-400">{token.reflectionTax}%</div>
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Reflection Tax</div>
+                        <div className="font-semibold text-purple-400 text-sm">{token.reflectionTax}%</div>
                       </div>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Dev Tax</div>
-                        <div className="font-semibold text-green-400">{token.devTax}%</div>
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Dev Tax</div>
+                        <div className="font-semibold text-green-400 text-sm">{token.devTax}%</div>
                       </div>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Marketing Tax</div>
-                        <div className="font-semibold text-orange-400">{token.marketingTax}%</div>
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Marketing Tax</div>
+                        <div className="font-semibold text-orange-400 text-sm">{token.marketingTax}%</div>
                       </div>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <div className="text-sm text-muted-foreground">Sell Multiplier</div>
-                        <div className="font-semibold text-pink-400">{token.sellMultiplier}x</div>
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Sell Multiplier</div>
+                        <div className="font-semibold text-pink-400 text-sm">{token.sellMultiplier}x</div>
                       </div>
-                      {token.rewardToken && (
-                        <div className="bg-muted/50 p-3 rounded-lg">
-                          <div className="text-sm text-muted-foreground">Reward Token</div>
-                          <div className="font-semibold text-purple-400">{token.rewardToken}</div>
-                        </div>
-                      )}
                     </div>
                     {token.distributorAddress && (
-                      <div className="mt-4">
+                      <div className="mt-3">
                         <AddressDisplay 
                           address={token.distributorAddress} 
                           label="Distributor Address"
@@ -249,15 +255,6 @@ const TokensPage = () => {
                         />
                       </div>
                     )}
-                  </div>
-                )}
-                
-                {token.wrappedToken && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <div className="bg-muted/50 p-3 rounded-lg inline-block">
-                      <div className="text-sm text-muted-foreground">Wrapped Token</div>
-                      <div className="font-semibold text-indigo-400">{token.wrappedToken}</div>
-                    </div>
                   </div>
                 )}
               </CardContent>

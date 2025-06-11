@@ -30,6 +30,17 @@ export const TOKEN_LIST: TokenConfig[] = [
       address: "0xwplsn" // Replace with actual wrapped PLSN address
     },
     hasDistributor: true
+  },
+  {
+    name: "NetGain",
+    symbol: "NGAIN",
+    address: "0xA7589c33aF2AEedD0fC5a5e6d51d6af5Bd5F15Fd",
+    abiFile: "TaxTokenABI",
+    rewardToken: {
+      symbol: "PLSN",
+      address: "0xf651e3978f1f6ec38a6da6014caa6aa07fbae453"
+    },
+    hasDistributor: true
   }
   // Add more tokens here as needed
 ];
