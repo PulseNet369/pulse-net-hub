@@ -27,25 +27,45 @@ const TokensPage = () => {
           
           const totalSupplyNum = parseFloat(tokenData.totalSupply || "0");
           
-          // Use real price data if available, otherwise use mock data
-          const plsPrice = priceData?.current.derivedPLS || 0;
-          const usdPrice = priceData?.current.derivedUSD || (index === 0 ? 0.00012 : index === 1 ? 0.0045 : 0.0023);
-          const plsChange = priceData?.plsChange24h || (index === 0 ? 5.2 : index === 1 ? 2.8 : -1.3);
-          const usdChange = priceData?.usdChange24h || (index === 0 ? 5.2 : index === 1 ? 2.8 : -1.3);
+          // Use real price data if available, otherwise display N/A
+          let priceUSD: string;
+          let pricePLS: string;
+          let change24hUSD: string;
+          let change24hPLS: string;
+          let marketCapUSD: string;
+          let marketCapPLS: string;
           
-          const marketCapUSD = usdPrice * totalSupplyNum;
-          const marketCapPLS = plsPrice * totalSupplyNum;
+          if (priceData && priceData.current.derivedUSD > 0) {
+            const usdPrice = priceData.current.derivedUSD;
+            const plsPrice = priceData.current.derivedPLS;
+            const usdChange = priceData.usdChange24h;
+            const plsChange = priceData.plsChange24h;
+            
+            priceUSD = `$${formatPrice(usdPrice)}`;
+            pricePLS = `${formatPrice(plsPrice)}`;
+            change24hUSD = formatPercentageChange(usdChange);
+            change24hPLS = formatPercentageChange(plsChange);
+            marketCapUSD = `$${(usdPrice * totalSupplyNum).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+            marketCapPLS = `${formatPrice(plsPrice * totalSupplyNum)} PLS`;
+          } else {
+            priceUSD = "N/A";
+            pricePLS = "N/A";
+            change24hUSD = "N/A";
+            change24hPLS = "N/A";
+            marketCapUSD = "N/A";
+            marketCapPLS = "N/A";
+          }
           
           return {
             id: `token-${index}`,
             ...tokenData,
             hasDistributor: tokenConfig.hasDistributor,
-            priceUSD: formatPrice(usdPrice),
-            pricePLS: formatPrice(plsPrice),
-            change24hUSD: formatPercentageChange(usdChange),
-            change24hPLS: formatPercentageChange(plsChange),
-            marketCapUSD: `$${marketCapUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-            marketCapPLS: `${formatPrice(marketCapPLS)} PLS`,
+            priceUSD,
+            pricePLS,
+            change24hUSD,
+            change24hPLS,
+            marketCapUSD,
+            marketCapPLS,
             rawPriceData: priceData,
           } as TokenData & { 
             priceUSD: string; 
@@ -69,12 +89,12 @@ const TokensPage = () => {
             hasDistributor: tokenConfig.hasDistributor,
             rewardToken: tokenConfig.rewardToken?.symbol,
             wrappedToken: tokenConfig.wrappedToken?.symbol,
-            priceUSD: "$0.00000000",
-            pricePLS: "0.00000000",
-            change24hUSD: "0.00%",
-            change24hPLS: "0.00%",
-            marketCapUSD: "$0",
-            marketCapPLS: "0 PLS",
+            priceUSD: "N/A",
+            pricePLS: "N/A",
+            change24hUSD: "N/A",
+            change24hPLS: "N/A",
+            marketCapUSD: "N/A",
+            marketCapPLS: "N/A",
             holders: 0,
           } as TokenData & { 
             priceUSD: string; 
@@ -212,19 +232,23 @@ const TokensPage = () => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 justify-end">
                         <div className="text-lg md:text-xl font-bold text-gradient-pulse">
-                          ${token.priceUSD}
+                          {token.priceUSD}
                         </div>
-                        <div className={`text-sm font-semibold ${token.change24hUSD?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                          {token.change24hUSD}
-                        </div>
+                        {token.change24hUSD !== "N/A" && (
+                          <div className={`text-sm font-semibold ${token.change24hUSD?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                            {token.change24hUSD}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 justify-end">
                         <div className="text-sm font-bold text-purple-300">
-                          {token.pricePLS} PLS
+                          {token.pricePLS} {token.pricePLS !== "N/A" && "PLS"}
                         </div>
-                        <div className={`text-xs font-semibold ${token.change24hPLS?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                          {token.change24hPLS}
-                        </div>
+                        {token.change24hPLS !== "N/A" && (
+                          <div className={`text-xs font-semibold ${token.change24hPLS?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                            {token.change24hPLS}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
