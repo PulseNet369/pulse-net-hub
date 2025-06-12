@@ -16,9 +16,15 @@ export interface TokenData {
   sellMultiplier?: number;
   rewardToken?: string;
   wrappedToken?: string;
-  price?: string;
-  change24h?: string;
-  marketCap?: string;
+  price?: string; // Legacy field for backwards compatibility
+  change24h?: string; // Legacy field for backwards compatibility
+  marketCap?: string; // Legacy field for backwards compatibility
+  priceUSD?: string;
+  pricePLS?: string;
+  change24hUSD?: string;
+  change24hPLS?: string;
+  marketCapUSD?: string;
+  marketCapPLS?: string;
   holders?: number;
   hasDistributor?: boolean;
 }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AddressDisplay } from "@/components/AddressDisplay";
 import { fetchTokenData } from "../utils/blockchain";
+import { fetchTokenPrice, formatPrice, formatPercentageChange } from "../services/priceService";
 import { TokenData } from "../types/token";
 import { TOKEN_LIST } from "../data/tokenList";
 
@@ -20,21 +20,42 @@ const TokensPage = () => {
       console.log('Fetching data for all tokens...');
       const tokenPromises = TOKEN_LIST.map(async (tokenConfig, index) => {
         try {
-          const tokenData = await fetchTokenData(tokenConfig);
+          const [tokenData, priceData] = await Promise.all([
+            fetchTokenData(tokenConfig),
+            fetchTokenPrice(tokenConfig.address)
+          ]);
           
-          // Mock price data (in real app, this would come from price API)
-          const mockPrice = index === 0 ? 0.00012 : index === 1 ? 0.0045 : 0.0023;
           const totalSupplyNum = parseFloat(tokenData.totalSupply || "0");
-          const marketCap = mockPrice * totalSupplyNum;
+          
+          // Use real price data if available, otherwise use mock data
+          const plsPrice = priceData?.current.derivedPLS || 0;
+          const usdPrice = priceData?.current.derivedUSD || (index === 0 ? 0.00012 : index === 1 ? 0.0045 : 0.0023);
+          const plsChange = priceData?.plsChange24h || (index === 0 ? 5.2 : index === 1 ? 2.8 : -1.3);
+          const usdChange = priceData?.usdChange24h || (index === 0 ? 5.2 : index === 1 ? 2.8 : -1.3);
+          
+          const marketCapUSD = usdPrice * totalSupplyNum;
+          const marketCapPLS = plsPrice * totalSupplyNum;
           
           return {
             id: `token-${index}`,
             ...tokenData,
             hasDistributor: tokenConfig.hasDistributor,
-            price: `$${mockPrice.toFixed(6)}`,
-            change24h: index === 0 ? "+5.2%" : index === 1 ? "+2.8%" : "-1.3%",
-            marketCap: `$${marketCap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-          } as TokenData;
+            priceUSD: formatPrice(usdPrice),
+            pricePLS: formatPrice(plsPrice),
+            change24hUSD: formatPercentageChange(usdChange),
+            change24hPLS: formatPercentageChange(plsChange),
+            marketCapUSD: `$${marketCapUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+            marketCapPLS: `${formatPrice(marketCapPLS)} PLS`,
+            rawPriceData: priceData,
+          } as TokenData & { 
+            priceUSD: string; 
+            pricePLS: string; 
+            change24hUSD: string; 
+            change24hPLS: string; 
+            marketCapUSD: string; 
+            marketCapPLS: string;
+            rawPriceData: any;
+          };
         } catch (error) {
           console.error(`Error fetching data for token ${tokenConfig.address}:`, error);
           // Return fallback data if fetch fails
@@ -48,11 +69,21 @@ const TokensPage = () => {
             hasDistributor: tokenConfig.hasDistributor,
             rewardToken: tokenConfig.rewardToken?.symbol,
             wrappedToken: tokenConfig.wrappedToken?.symbol,
-            price: "$0.00",
-            change24h: "0%",
-            marketCap: "$0",
+            priceUSD: "$0.00000000",
+            pricePLS: "0.00000000",
+            change24hUSD: "0.00%",
+            change24hPLS: "0.00%",
+            marketCapUSD: "$0",
+            marketCapPLS: "0 PLS",
             holders: 0,
-          } as TokenData;
+          } as TokenData & { 
+            priceUSD: string; 
+            pricePLS: string; 
+            change24hUSD: string; 
+            change24hPLS: string; 
+            marketCapUSD: string; 
+            marketCapPLS: string;
+          };
         }
       });
 
@@ -177,12 +208,24 @@ const TokensPage = () => {
                       />
                     </CardDescription>
                   </div>
-                  <div className="text-right lg:min-w-[120px]">
-                    <div className="text-lg md:text-xl font-bold text-gradient-pulse">
-                      {token.price}
-                    </div>
-                    <div className={`text-sm font-semibold ${token.change24h?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                      {token.change24h}
+                  <div className="text-right lg:min-w-[200px]">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 justify-end">
+                        <div className="text-lg md:text-xl font-bold text-gradient-pulse">
+                          ${token.priceUSD}
+                        </div>
+                        <div className={`text-sm font-semibold ${token.change24hUSD?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                          {token.change24hUSD}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 justify-end">
+                        <div className="text-sm font-bold text-purple-300">
+                          {token.pricePLS} PLS
+                        </div>
+                        <div className={`text-xs font-semibold ${token.change24hPLS?.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                          {token.change24hPLS}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -200,8 +243,12 @@ const TokensPage = () => {
                     </div>
                   )}
                   <div className="bg-muted/50 p-2 rounded-lg">
-                    <div className="text-xs text-muted-foreground">Market Cap</div>
-                    <div className="font-semibold text-foreground text-sm">{token.marketCap}</div>
+                    <div className="text-xs text-muted-foreground">Market Cap (USD)</div>
+                    <div className="font-semibold text-foreground text-sm">{token.marketCapUSD}</div>
+                  </div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <div className="text-xs text-muted-foreground">Market Cap (PLS)</div>
+                    <div className="font-semibold text-purple-300 text-sm">{token.marketCapPLS}</div>
                   </div>
                   <div className="bg-muted/50 p-2 rounded-lg">
                     <div className="text-xs text-muted-foreground">Holders</div>
