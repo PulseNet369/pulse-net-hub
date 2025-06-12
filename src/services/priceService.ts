@@ -71,9 +71,12 @@ async function getCurrentBlock(): Promise<number> {
       console.log(`Fetching current block from ${version}...`);
       const response = await executeGraphQLQuery(query, endpoint);
       
+      console.log(`Block response from ${version}:`, JSON.stringify(response, null, 2));
+      
       if (response.data?._meta?.block?.number) {
-        console.log(`Current block from ${version}:`, response.data._meta.block.number);
-        return response.data._meta.block.number;
+        const blockNumber = response.data._meta.block.number;
+        console.log(`Current block from ${version}: ${blockNumber}`);
+        return blockNumber;
       }
     } catch (error) {
       console.error(`Error fetching current block from ${version}:`, error);
@@ -110,22 +113,22 @@ async function getTokenPriceAtBlock(tokenAddress: string, blockNumber: number): 
       console.log(`Fetching token price from ${version} at block ${blockNumber} for ${tokenAddress}...`);
       const response = await executeGraphQLQuery(query, endpoint);
       
-      console.log(`GraphQL response from ${version}:`, JSON.stringify(response, null, 2));
+      console.log(`Price response from ${version} at block ${blockNumber}:`, JSON.stringify(response, null, 2));
       
       if (response.errors) {
         console.error(`GraphQL errors from ${version}:`, response.errors);
       }
       
-      if (response.data?.token) {
+      if (response.data?.token?.derivedPLS && response.data?.token?.derivedUSD) {
         const token = response.data.token;
-        console.log(`Found token data from ${version}:`, token);
+        console.log(`Found token price data from ${version}:`, token);
         return {
-          derivedPLS: parseFloat(token.derivedPLS || '0'),
-          derivedUSD: parseFloat(token.derivedUSD || '0'),
+          derivedPLS: parseFloat(token.derivedPLS),
+          derivedUSD: parseFloat(token.derivedUSD),
           block: blockNumber
         };
       } else {
-        console.warn(`No token data found in ${version} response for ${tokenAddress}`);
+        console.warn(`No token price data found in ${version} response for ${tokenAddress} at block ${blockNumber}`);
       }
     } catch (error) {
       console.error(`Error fetching token price from ${version}:`, error);
@@ -165,30 +168,40 @@ export async function fetchTokenPrice(tokenAddress: string): Promise<PriceData |
   try {
     console.log(`Fetching price data for token: ${tokenAddress}`);
     
-    // Get current block
+    // Step 1: Get current block number
     const currentBlock = await getCurrentBlock();
     const previousBlock = currentBlock - BLOCKS_24H;
     
     console.log(`Current block: ${currentBlock}, Previous block (24h ago): ${previousBlock}`);
     
-    // Fetch current and previous prices
-    const [currentPrice, previousPrice] = await Promise.all([
-      getTokenPriceAtBlock(tokenAddress, currentBlock),
-      getTokenPriceAtBlock(tokenAddress, previousBlock)
-    ]);
-    
-    console.log(`Price results for ${tokenAddress}:`, { currentPrice, previousPrice });
+    // Step 2: Fetch current price at current block
+    console.log(`Fetching current price at block ${currentBlock}...`);
+    const currentPrice = await getTokenPriceAtBlock(tokenAddress, currentBlock);
     
     if (!currentPrice) {
-      console.warn(`No current price data found for token ${tokenAddress}`);
+      console.warn(`No current price data found for token ${tokenAddress} at block ${currentBlock}`);
       return null;
     }
+    
+    console.log(`Current price found:`, currentPrice);
+    
+    // Step 3: Fetch previous price at previous block (24h ago)
+    console.log(`Fetching previous price at block ${previousBlock}...`);
+    const previousPrice = await getTokenPriceAtBlock(tokenAddress, previousBlock);
+    
+    if (!previousPrice) {
+      console.warn(`No previous price data found for token ${tokenAddress} at block ${previousBlock}, using current price as fallback`);
+    }
+    
+    console.log(`Previous price found:`, previousPrice);
     
     // Use current price as fallback if previous price is not available
     const prevPrice = previousPrice || currentPrice;
     
     const plsChange24h = calculatePercentageChange(currentPrice.derivedPLS, prevPrice.derivedPLS);
     const usdChange24h = calculatePercentageChange(currentPrice.derivedUSD, prevPrice.derivedUSD);
+    
+    console.log(`Price changes calculated - PLS: ${plsChange24h}%, USD: ${usdChange24h}%`);
     
     return {
       current: currentPrice,
