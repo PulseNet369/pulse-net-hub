@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { fetchTokenPrice } from "../services/priceService";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -13,12 +15,23 @@ const navigationItems = [
   { name: "Info", href: "/info" },
 ];
 
+const PLSN_TOKEN_ADDRESS = "0xf651e3978f1f6ec38a6da6014caa6aa07fbae453";
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
-  // Mock PulseNet price - in a real app, this would come from an API
-  const pulseNetPrice = "$0.00012";
+  // Fetch PLSN price
+  const { data: plsnPriceData } = useQuery({
+    queryKey: ['plsn-price', PLSN_TOKEN_ADDRESS],
+    queryFn: () => fetchTokenPrice(PLSN_TOKEN_ADDRESS),
+    staleTime: 60000, // 1 minute
+    refetchInterval: 300000, // 5 minutes
+  });
+
+  const pulseNetPrice = plsnPriceData?.current?.derivedUSD 
+    ? `$${plsnPriceData.current.derivedUSD.toFixed(8)}`
+    : "$0.00000000";
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-pink-500/20 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -33,7 +46,7 @@ export function Navbar() {
 
           {/* PulseNet Price */}
           <div className="hidden md:flex items-center space-x-2 bg-muted/50 px-3 py-1 rounded-lg">
-            <span className="text-sm text-muted-foreground">PulseNet:</span>
+            <span className="text-sm text-muted-foreground">PLSN:</span>
             <span className="text-sm font-semibold text-primary">{pulseNetPrice}</span>
           </div>
 
@@ -67,7 +80,7 @@ export function Navbar() {
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* Mobile PulseNet Price */}
                   <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <span className="text-sm text-muted-foreground">PulseNet:</span>
+                    <span className="text-sm text-muted-foreground">PLSN:</span>
                     <span className="text-sm font-semibold text-primary">{pulseNetPrice}</span>
                   </div>
                   
