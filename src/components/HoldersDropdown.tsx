@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,9 +14,10 @@ interface Holder {
 interface HoldersDropdownProps {
   totalSupply: string;
   holderCount: number;
+  tokenAddress: string;
 }
 
-export function HoldersDropdown({ totalSupply, holderCount }: HoldersDropdownProps) {
+export function HoldersDropdown({ totalSupply, holderCount, tokenAddress }: HoldersDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [holders, setHolders] = useState<Holder[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +28,7 @@ export function HoldersDropdown({ totalSupply, holderCount }: HoldersDropdownPro
   const loadHolders = async (page: number) => {
     setIsLoading(true);
     try {
-      const { holders: fetchedHolders, hasMore: more } = await fetchHolders(page, 10);
+      const { holders: fetchedHolders, hasMore: more } = await fetchHolders(page, 10, tokenAddress);
       setHolders(fetchedHolders);
       setHasMore(more);
       setCurrentPage(page);
@@ -44,7 +44,7 @@ export function HoldersDropdown({ totalSupply, holderCount }: HoldersDropdownPro
     if (isOpen && holders.length === 0) {
       loadHolders(1);
     }
-  }, [isOpen]);
+  }, [isOpen, tokenAddress]);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {

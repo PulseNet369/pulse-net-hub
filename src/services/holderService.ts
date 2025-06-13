@@ -15,17 +15,19 @@ interface HolderListResponse {
   status: string;
 }
 
-const PLSN_TOKEN_ADDRESS = '0xf651e3978f1f6ec38a6da6014caa6aa07fbae453';
-
-export async function fetchHolderCount(): Promise<number> {
+export async function fetchHolderCount(tokenAddress?: string): Promise<number> {
+  // Use the provided token address or default to PLSN
+  const address = tokenAddress || '0xf651e3978f1f6ec38a6da6014caa6aa07fbae453';
+  
   try {
-    const response = await fetch(`https://api.scan.pulsechain.com/api/v2/tokens/${PLSN_TOKEN_ADDRESS}/counters`);
+    const response = await fetch(`https://api.scan.pulsechain.com/api/v2/tokens/${address}/counters`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data: HolderCountResponse = await response.json();
+    console.log(`Holder count for ${address}:`, data.token_holders_count);
     return parseInt(data.token_holders_count, 10);
   } catch (error) {
     console.error('Error fetching holder count:', error);
@@ -33,10 +35,13 @@ export async function fetchHolderCount(): Promise<number> {
   }
 }
 
-export async function fetchHolders(page: number = 1, offset: number = 10): Promise<{ holders: Holder[]; hasMore: boolean }> {
+export async function fetchHolders(page: number = 1, offset: number = 10, tokenAddress?: string): Promise<{ holders: Holder[]; hasMore: boolean }> {
+  // Use the provided token address or default to PLSN
+  const address = tokenAddress || '0xf651e3978f1f6ec38a6da6014caa6aa07fbae453';
+  
   try {
     const response = await fetch(
-      `https://api.scan.pulsechain.com/api?module=token&action=getTokenHolders&contractaddress=${PLSN_TOKEN_ADDRESS}&page=${page}&offset=${offset}`
+      `https://api.scan.pulsechain.com/api?module=token&action=getTokenHolders&contractaddress=${address}&page=${page}&offset=${offset}`
     );
     
     if (!response.ok) {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,13 +17,6 @@ const TokensPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTokens, setFilteredTokens] = useState<TokenData[]>([]);
 
-  // Fetch PLSN holder count separately
-  const { data: plsnHolderCount } = useQuery({
-    queryKey: ['plsn-holder-count'],
-    queryFn: fetchHolderCount,
-    staleTime: 300000, // 5 minutes
-  });
-
   // Fetch token data using React Query
   const { data: tokensData, isLoading, error } = useQuery({
     queryKey: ['tokens', TOKEN_LIST],
@@ -32,9 +24,10 @@ const TokensPage = () => {
       console.log('Fetching data for all tokens...');
       const tokenPromises = TOKEN_LIST.map(async (tokenConfig, index) => {
         try {
-          const [tokenData, priceData] = await Promise.all([
+          const [tokenData, priceData, holderCount] = await Promise.all([
             fetchTokenData(tokenConfig),
-            fetchTokenPrice(tokenConfig.address)
+            fetchTokenPrice(tokenConfig.address),
+            fetchHolderCount(tokenConfig.address)
           ]);
           
           const totalSupplyNum = parseFloat(tokenData.totalSupply || "0");
@@ -67,11 +60,6 @@ const TokensPage = () => {
             marketCapUSD = "N/A";
             marketCapPLS = "N/A";
           }
-
-          // Use API holder count for PLSN token, fallback to blockchain estimate for others
-          const actualHolders = tokenConfig.address.toLowerCase() === PLSN_TOKEN_ADDRESS.toLowerCase() 
-            ? plsnHolderCount || tokenData.holders || 0
-            : tokenData.holders || 0;
           
           return {
             id: `token-${index}`,
@@ -83,7 +71,7 @@ const TokensPage = () => {
             change24hPLS,
             marketCapUSD,
             marketCapPLS,
-            holders: actualHolders,
+            holders: holderCount, // Use the API holder count
             rawPriceData: priceData,
           } as TokenData & { 
             priceUSD: string; 
@@ -295,14 +283,11 @@ const TokensPage = () => {
                   <div className="bg-muted/50 p-2 rounded-lg">
                     <div className="text-xs text-muted-foreground">Holders</div>
                     <div className="font-semibold text-foreground text-sm flex items-center gap-1">
-                      {token.address.toLowerCase() === PLSN_TOKEN_ADDRESS.toLowerCase() ? (
-                        <HoldersDropdown 
-                          totalSupply={token.totalSupply} 
-                          holderCount={token.holders || 0}
-                        />
-                      ) : (
-                        <span>{token.holders}</span>
-                      )}
+                      <HoldersDropdown 
+                        totalSupply={token.totalSupply} 
+                        holderCount={token.holders || 0}
+                        tokenAddress={token.address}
+                      />
                     </div>
                   </div>
                   {token.rewardToken && (
