@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AddressDisplay } from "@/components/AddressDisplay";
 import { addressList, AddressEntry } from "@/data/addressList";
 
 const categories = ["All", "Token Holder", "Liquidity Pool", "Smart Contract", "Dev Wallet", "Marketing Wallet", "OA Address"];
@@ -87,8 +88,12 @@ const IndexPage = () => {
                         {item.category}
                       </Badge>
                     </CardTitle>
-                    <div className="font-mono text-sm text-muted-foreground mb-2 break-all">
-                      {item.address}
+                    <div className="mb-3">
+                      <AddressDisplay 
+                        address={item.address} 
+                        label=""
+                        showLabel={false}
+                      />
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {item.tags.map((tag, index) => (

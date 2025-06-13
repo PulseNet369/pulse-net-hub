@@ -23,34 +23,6 @@ export const addressList: AddressEntry[] = [
     address: "0xead0d2751d20c83d6ee36f6004f2aa17637809cf",
     tags: ["LP", "liquidity", "PulseX LP", "PLSN", "PLS"],
     category: "Liquidity Pool"
-  },
-  {
-    id: 3,
-    name: "Whale #1",
-    address: "0x1234567890abcdef1234567890abcdef12345678",
-    tags: ["Large Holder", "Early Adopter"],
-    category: "Token Holder"
-  },
-  {
-    id: 4,
-    name: "ECO-PLS LP",
-    address: "0x2345678901bcdef12345678901bcdef123456789",
-    tags: ["ECO/PLS Pool", "High Volume"],
-    category: "Liquidity Pool"
-  },
-  {
-    id: 5,
-    name: "Reward Contract",
-    address: "0x3456789012cdef123456789012cdef1234567890",
-    tags: ["Reward Distributor", "Ecosystem"],
-    category: "Smart Contract"
-  },
-  {
-    id: 6,
-    name: "Dev Wallet #1",
-    address: "0x4567890123def1234567890123def12345678901",
-    tags: ["Team", "Developer"],
-    category: "Dev Wallet"
   }
 ];
 
